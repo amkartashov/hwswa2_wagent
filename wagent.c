@@ -6,10 +6,6 @@
 #define _UNICODE
 #endif
 
-#define SVCNAME TEXT("hwswa2_agent")
-
-#define BANNER TEXT("started_ok possible commands: exit")
-
 #include <windows.h>
 #include <stdio.h>
 #pragma comment(lib, "advapi32.lib")
@@ -18,8 +14,10 @@
 #include "selfdelete.h"
 #include "pipefunc.h"
 #include "auxiliary.h"
+#include "commands.h"
 
 // ========== Global variables
+#define SVCNAME TEXT("hwswa2_agent")
 
 SERVICE_STATUS gSvcStatus; 
 SERVICE_STATUS_HANDLE gSvcStatusHandle; 
