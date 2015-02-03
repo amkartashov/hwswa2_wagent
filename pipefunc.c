@@ -41,6 +41,7 @@ HANDLE CreateCMDPipe(VOID){
 
 BOOL ConnectOrStop(HANDLE hPipe, LPOVERLAPPED lpo, HANDLE stopevent){ 
 	if (signalled(stopevent)) return FALSE;
+    debug(TEXT("Trying to connect"));
 	// Initiate connection
 	if (ConnectNamedPipe(hPipe, lpo)){
     	debug(TEXT("ConnectNamedPipe failed")); 
@@ -79,6 +80,7 @@ BOOL ConnectOrStop(HANDLE hPipe, LPOVERLAPPED lpo, HANDLE stopevent){
 BOOL SendOrStop(HANDLE hPipe, LPOVERLAPPED lpo, WCHAR* msg, HANDLE stopevent){
 	DWORD bytes_written;
 	if (signalled(stopevent) || !CMDPIPEconnected) return FALSE;
+    debug(TEXT("About to send: %s"), msg);
 	// Initiate writing
 	if (WriteFile(hPipe, msg, wcslen(msg)*sizeof(WCHAR), NULL, lpo)){
     	debug(TEXT("WriteFile successed without delay")); 

@@ -37,7 +37,7 @@ VOID cleanup(VOID);
 int wmain(int argc, WCHAR *argv[]){
 	SelfDelete(TRUE);
 	prepare_log();
-    debug(TEXT("about to start"));
+    debug(TEXT("======== about to start ========="));
     debug(TEXT("init services table"));
     SERVICE_TABLE_ENTRY service_table[2];
     service_table[0].lpServiceName = SVCNAME;
@@ -87,23 +87,27 @@ VOID SvcInit(DWORD dwArgc, LPTSTR *lpszArgv){
     ReportSvcStatus(SERVICE_RUNNING, NO_ERROR, 0);
     debug(TEXT("Init done"));
     while(!signalled(ghSvcStopEvent)){
-    	debug(TEXT("Trying to connect"));
 	    ConnectOrStop(cmdPipe, &oOverlap, ghSvcStopEvent);
 	    if (CMDPIPEconnected){
 	    	WCHAR msg[MAXMSGSIZE];
 	    	wcscpy_s(msg, MAXMSGSIZE, BANNER);
-	    	debug(TEXT("About to send: %s"), msg);
 	    	SendOrStop(cmdPipe, &oOverlap, msg, ghSvcStopEvent);
 	    	while(CMDPIPEconnected && !signalled(ghSvcStopEvent)){
-	    		// read command
+	    		struct Command* cmd;
+                WCHAR cmdresult[CMD_RESULT_BUFSIZE];
 	    		if (ReceiveOrStop(cmdPipe, &oOverlap, msg, ghSvcStopEvent)) {
-		    		debug(TEXT("Received: %s"), msg);
-		    		// execute command
-		    		// send reply
-			    	wcscpy_s(msg, MAXMSGSIZE, TEXT("result_ok"));
-			    	debug(TEXT("About to send: %s"), msg);
-		    		SendOrStop(cmdPipe, &oOverlap, msg, ghSvcStopEvent);}}
-	    	debug(TEXT("Will disconnect"));
+		    		cmd = FindCommand(msg);
+		    		if (NULL == cmd){
+                        wcscpy_s(msg, MAXMSGSIZE, CMD_ACCEPTED_NOTOK);
+                        SendOrStop(cmdPipe, &oOverlap, msg, ghSvcStopEvent);}
+                    else {
+                        wcscpy_s(msg, MAXMSGSIZE, CMD_ACCEPTED_OK);
+                        SendOrStop(cmdPipe, &oOverlap, msg, ghSvcStopEvent);
+                        ExecCommand(cmd, msg, cmdresult, ghSvcStopEvent, CMD_DEF_TIMEOUT);
+                        SendOrStop(cmdPipe, &oOverlap, cmdresult, ghSvcStopEvent);}}}
+            debug(TEXT("Flush cmdPipe"));
+            FlushFileBuffers(cmdPipe);
+            debug(TEXT("Will disconnect"));
 			DisconnectNamedPipe(cmdPipe);}}
    	ReportSvcStatus(SERVICE_STOPPED, NO_ERROR, 0);
 	return;}

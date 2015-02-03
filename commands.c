@@ -1,29 +1,39 @@
 #include "commands.h"
+#include "debug.h"
 
+// DO NOT FORGET TO INCREASE IF ADDING NEW COMMAND
+#define NUMBER_OF_CMDS 1
+
+// DO NOT FORGET TO ADD COMMAND TO BANNER IF ADDING NEW COMMAND
 WCHAR* BANNER = TEXT("started_ok possible commands: exit");
 
 struct Command {
 	WCHAR* cmdname;
-	WCHAR* (*cmdfunc)(WCHAR* args, HANDLE stopevent, HANDLE timeoutevent);
-};
+	VOID (*cmdfunc)(WCHAR* args, WCHAR* result, HANDLE stopevent, int timeout);};
 
-// aux functions declarations
+// command function declarations and commands array
 
-WCHAR* get_cmdname(WCHAR* cmdline);
-WCHAR* get_argsline(WCHAR* cmdline);
+VOID cmd_exit(WCHAR* args, WCHAR* result, HANDLE stopevent, int timeout);
 
-// command function declarations
+struct Command commands[NUMBER_OF_CMDS] = { {TEXT("exit"), cmd_exit }, };
 
-WCHAR* cmd_exit(WCHAR* args, HANDLE stopevent, HANDLE timeoutevent);
+// FindCommand and ExecCommand
 
-struct Command commands[1] = { {TEXT("exit"), cmd_exit }, };
+struct Command * FindCommand(WCHAR* cmdline){
+	int i;
+	for (i=0; i<NUMBER_OF_CMDS; i++)
+		if (0 == wcsncmp(cmdline, commands[i].cmdname, wcslen(commands[i].cmdname))){
+			debug(TEXT("Found command: %s"), commands[i].cmdname);
+			return &commands[i];}
+	debug(TEXT("Command not found: %s"), cmdline);
+	return NULL;}
 
-struct Command * FindCommand(WCHAR* cmdline);
-WCHAR* ExecCommand(struct Command *cmd, WCHAR* cmdline, HANDLE stopevent, int timeout);
-
+VOID ExecCommand(struct Command *cmd, WCHAR* cmdline, WCHAR* result, HANDLE stopevent, int timeout){
+	WCHAR* args = cmdline + wcslen(cmd->cmdname);
+	cmd->cmdfunc(args, result, stopevent, timeout);}
 
 // command functions
 
-WCHAR* cmd_exit(WCHAR* args, HANDLE stopevent, HANDLE timeoutevent){
+VOID cmd_exit(WCHAR* args, WCHAR* result, HANDLE stopevent, int timeout){
 	SetEvent(stopevent);
-	return CMD_RESULT_OK;}
+	wcscpy_s(result, CMD_RESULT_BUFSIZE, CMD_RESULT_OK);}
