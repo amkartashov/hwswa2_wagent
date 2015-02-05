@@ -89,21 +89,23 @@ VOID SvcInit(DWORD dwArgc, LPTSTR *lpszArgv){
     while(!signalled(ghSvcStopEvent)){
 	    ConnectOrStop(cmdPipe, &oOverlap, ghSvcStopEvent);
 	    if (CMDPIPEconnected){
-	    	WCHAR msg[MAXMSGSIZE];
+            WCHAR msg[MAXMSGSIZE];
+            WCHAR cmdline[MAXMSGSIZE];
+            WCHAR cmdresult[CMD_RESULT_BUFSIZE];
 	    	wcscpy_s(msg, MAXMSGSIZE, BANNER);
 	    	SendOrStop(cmdPipe, &oOverlap, msg, ghSvcStopEvent);
 	    	while(CMDPIPEconnected && !signalled(ghSvcStopEvent)){
 	    		struct Command* cmd;
-                WCHAR cmdresult[CMD_RESULT_BUFSIZE];
 	    		if (ReceiveOrStop(cmdPipe, &oOverlap, msg, ghSvcStopEvent)) {
 		    		cmd = FindCommand(msg);
 		    		if (NULL == cmd){
                         wcscpy_s(msg, MAXMSGSIZE, CMD_ACCEPTED_NOTOK);
                         SendOrStop(cmdPipe, &oOverlap, msg, ghSvcStopEvent);}
                     else {
+                        wcscpy_s(cmdline, MAXMSGSIZE, msg);
                         wcscpy_s(msg, MAXMSGSIZE, CMD_ACCEPTED_OK);
                         SendOrStop(cmdPipe, &oOverlap, msg, ghSvcStopEvent);
-                        ExecCommand(cmd, msg, cmdresult, ghSvcStopEvent, CMD_DEF_TIMEOUT);
+                        ExecCommand(cmd, cmdline, cmdresult, ghSvcStopEvent, CMD_DEF_TIMEOUT);
                         SendOrStop(cmdPipe, &oOverlap, cmdresult, ghSvcStopEvent);}}}
             debug(TEXT("Flush cmdPipe"));
             FlushFileBuffers(cmdPipe);
