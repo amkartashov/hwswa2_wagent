@@ -17,11 +17,7 @@ Edit env variables if needed (or just start Developer Command Prompt from Visual
 	SET WindowsSDK_ExecutablePath_x86=C:\Program Files (x86)\Microsoft SDKs\Windows\v8.1A\bin\NETFX 4.5.1 Tools\
 	SET PATH=%PATH%;C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\
 
-	cl.exe /nologo /W3 /TC wagent.c debug.c selfdelete.c pipefunc.c auxiliary.c commands.c base64.c
-
-To have debug version add switch /DDEBUG:
-
-	cl.exe /nologo /W3 /TC /DDEBUG /Fewagent-debug wagent.c debug.c selfdelete.c pipefunc.c auxiliary.c commands.c base64.c
+	cl.exe /nologo /W3 /TC wagent.c debug.c selfdelete.c pipefunc.c auxiliary.c commands.c base64.c exec.c & cl.exe /nologo /W3 /TC /DDEBUG /Fewagent-debug wagent.c debug.c selfdelete.c pipefunc.c auxiliary.c commands.c base64.c exec.c
 
 
 To install wagent.exe as a service, run in elevated command prompt:
