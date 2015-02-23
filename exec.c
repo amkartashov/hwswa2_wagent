@@ -140,7 +140,7 @@ BOOL Execute(WCHAR *cmdline, WCHAR *in, WCHAR *out, WCHAR *err, size_t max_out_s
 					   TEXT("Terminating process because of stop event"));
 		else
 			swprintf_s(reason, EXEC_MAX_REASON, 
-					   TEXT("Terminating process because of timeout"));
+					   TEXT("timeout"));
 		debug(TEXT("Execute(): %s"), reason);
 		TerminateProcess(events[0], 0);
 		result = FALSE;}

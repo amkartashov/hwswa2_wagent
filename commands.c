@@ -43,7 +43,8 @@ struct Command * FindCommand(WCHAR* cmdline){
 	size_t cmdline_len = wcslen(cmdline);
 	for (i=0; i<NUMBER_OF_CMDS; i++){
 		cmdlen = wcslen(commands[i].cmdname);
-		if (cmdlen == cmdline_len || TEXT(' ') == cmdline[cmdlen])
+		if ((cmdlen <= cmdline_len) &&
+		   (cmdlen == cmdline_len || TEXT(' ') == cmdline[cmdlen]))
 			if (0 == wcsncmp(cmdline, commands[i].cmdname, cmdlen)){
 				debug(TEXT("Found command: %s"), commands[i].cmdname);
 				return &commands[i];}}
@@ -104,7 +105,7 @@ VOID cmd_exec(WCHAR* args, WCHAR* result, HANDLE stopevent, int timeout){
 	success = Execute(cmdline, in, out, err, EXEC_MAX_OUT, &exitcode, reason, stopevent, exec_timeout);
 	if (success){
 		UpdateResult(&result, &result_buf_size, CMD_RESULT_OK);
-		UpdateResult(&result, &result_buf_size, TEXT(" exitcode:"));
+		UpdateResult(&result, &result_buf_size, TEXT(" returncode:"));
 		swprintf(str_exitcode, 10, TEXT("%d"), exitcode);
 		UpdateResult(&result, &result_buf_size, str_exitcode);}
 	else {
@@ -140,7 +141,7 @@ VOID cmd_exec_in(WCHAR* args, WCHAR* result, HANDLE stopevent, int timeout){
 	success = Execute(cmdline, in, out, err, EXEC_MAX_OUT, &exitcode, reason, stopevent, exec_timeout);
 	if (success){
 		UpdateResult(&result, &result_buf_size, CMD_RESULT_OK);
-		UpdateResult(&result, &result_buf_size, TEXT(" exitcode:"));
+		UpdateResult(&result, &result_buf_size, TEXT(" returncode:"));
 		swprintf(str_exitcode, 10, TEXT("%d"), exitcode);
 		UpdateResult(&result, &result_buf_size, str_exitcode);}
 	else {
@@ -175,7 +176,7 @@ VOID cmd_exec_cmd(WCHAR* args, WCHAR* result, HANDLE stopevent, int timeout){
 	success = Execute_CMD(cmdline, out, err, EXEC_MAX_OUT, &exitcode, reason, stopevent, exec_timeout);
 	if (success){
 		UpdateResult(&result, &result_buf_size, CMD_RESULT_OK);
-		UpdateResult(&result, &result_buf_size, TEXT(" exitcode:"));
+		UpdateResult(&result, &result_buf_size, TEXT(" returncode:"));
 		swprintf(str_exitcode, 10, TEXT("%d"), exitcode);
 		UpdateResult(&result, &result_buf_size, str_exitcode);}
 	else {
@@ -208,7 +209,7 @@ VOID cmd_exec_pse(WCHAR* args, WCHAR* result, HANDLE stopevent, int timeout){
 	success = Execute_PSE(encoded_pse_cmd, out, err, EXEC_MAX_OUT, &exitcode, reason, stopevent, exec_timeout);
 	if (success){
 		UpdateResult(&result, &result_buf_size, CMD_RESULT_OK);
-		UpdateResult(&result, &result_buf_size, TEXT(" exitcode:"));
+		UpdateResult(&result, &result_buf_size, TEXT(" returncode:"));
 		swprintf(str_exitcode, 10, TEXT("%d"), exitcode);
 		UpdateResult(&result, &result_buf_size, str_exitcode);}
 	else {
