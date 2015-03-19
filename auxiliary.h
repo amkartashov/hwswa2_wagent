@@ -15,13 +15,14 @@ typedef LPWSTR RANGE;
 // ilist is array of ints with known length
 typedef struct ilist {
 	int *arr;
-	int len;
+	int len; // number of elements
+	int allocated; // allocated memory 
 } ILIST;
 
 RANGE sort_range(RANGE r);
 ILIST range2ilist(RANGE range);
 RANGE ilist2range(ILIST ilist);
 int range_len(RANGE range);
-VOID ilist_sort(ILIST il);
+VOID ilist_sort(ILIST *il);
 BOOL in_ilist(ILIST il, int n);
-VOID list_extend(ILIST il, int n);
+VOID ilist_extend(ILIST *il, int n);

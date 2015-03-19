@@ -30,7 +30,7 @@ BOOL signalled(HANDLE manual_reset_event){
 
 ILIST range2ilist_destructive(RANGE range);
 VOID range_extend(RANGE *r, int *cur_len, LPWSTR str);
-VOID ilist_sort(ILIST il);
+VOID ilist_sort(ILIST *il);
 
 BOOL in_ilist(ILIST il, int n){
 	int i;
@@ -53,7 +53,7 @@ RANGE ilist2range(ILIST il){
 	int range_len = 0;
 	int cur, previous, start;
 	int i;
-	ilist_sort(il);
+	ilist_sort(&il);
 	if (0 == il.len){
 		range = (RANGE) malloc(100*sizeof(WCHAR));
 		range[0] = 0;}  // ""
@@ -87,7 +87,7 @@ RANGE ilist2range(ILIST il){
 
 RANGE sort_range(RANGE r){
 	ILIST il = range2ilist(r);
-	RANGE result = ilist2range(il);
+	RANGE result = ilist2range(il); // ilist is sorted before conversion
 	free(il.arr);
 	return result;}
 
@@ -127,6 +127,7 @@ ILIST range2ilist_destructive(RANGE range){
 				il.len = _wtoi(end) - start + 1;
 				il.arr = (int*) malloc(il.len*sizeof(int));
 				for(i=0;i<il.len;i++) il.arr[i] = start + i;}}}
+	il.allocated = il.len;
 	return il;}
 
 
@@ -154,13 +155,42 @@ VOID range_extend(RANGE *r, int *cur_len, LPWSTR str){
 		wcscat_s(*r, new_len, str);
 		*cur_len = new_len;}}
 
+VOID ilist_extend(ILIST *il, int n){
+	int block_size = 100;  // we extend allocated memory by 100 ints;
+	int *tmp;
+	int i;
+	if (NULL == il->arr) { // empty
+		il->len = 1;
+		il->arr = (int*) malloc(block_size*sizeof(int));
+		il->arr[0] = n;
+		il->allocated = block_size;}
+	else {
+		if (il->allocated < (il->len + 1)) {
+			tmp = (int*) malloc( (il->allocated + block_size)*sizeof(int) );
+			for(i=0;i<il->len;i++) tmp[i] = il->arr[i];
+			il->allocated += block_size;}
+		il->arr[il->len] = n;
+		il->len++;}}
+
 int intcmp(const void *aa, const void *bb){
     const int *a = aa, *b = bb;
     return (*a < *b) ? -1 : (*a > *b);}
 
-VOID ilist_sort(ILIST il){
-	if (0 == il.len) return;
-	qsort(il.arr, il.len, sizeof(int), intcmp);}
+VOID ilist_sort(ILIST *il){
+	if (0 == il->len) return;
+	qsort(il->arr, il->len, sizeof(int), intcmp);
+	// also removes duplicates
+	int i, j, cur, next, curlen;
+	i = 0;
+	cur = il->arr[i];
+	curlen = il->len;
+	for(j=1;j<curlen;j++){
+		next = il->arr[j];
+		if (next == cur) il->len = il->len - 1;
+		else {
+			cur = next;
+			i++;
+			if (i != j) il->arr[i] = next;}}}
 
 
 int range_len_destructive(RANGE range);
